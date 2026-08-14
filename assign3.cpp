@@ -1,154 +1,83 @@
-CODE 1 : 
-
 #include <iostream>
 using namespace std;
 
 int main()
 {
-    int firstOctet;
+    int ip[4];
+    int subnet;
 
-    cout << "Enter the first octet of the IP address: ";
-    cin >> firstOctet;
-
-    if (firstOctet >= 1 && firstOctet <= 126)
-    {
-        cout << "\nClass A" << endl;
-        cout << "Address Range: 1.0.0.0 - 126.255.255.255" << endl;
-        cout << "Default Subnet Mask: 255.0.0.0" << endl;
-
-        cout << "\nNumber of Networks: 2^7 - 2 = 126" << endl;
-        cout << "Reason:" << endl;
-        cout << "-> First bit is fixed to 0 to identify Class A." << endl;
-        cout << "-> Remaining 7 bits are used for the Network ID." << endl;
-        cout << "-> 2^7 = 128 possible networks." << endl;
-        cout << "-> Subtract 1 because Network ID 0 is reserved." << endl;
-        cout << "-> Subtract 1 because Network ID 127 is reserved for Loopback." << endl;
-
-        cout << "\nNumber of Hosts per Network: 2^24 - 2 = 16,777,214" << endl;
-        cout << "Reason:" << endl;
-        cout << "-> Remaining 24 bits are used for the Host ID." << endl;
-        cout << "-> 2^24 = 16,777,216 possible host addresses." << endl;
-        cout << "-> Subtract 1 for the Network Address (all host bits = 0)." << endl;
-        cout << "-> Subtract 1 for the Broadcast Address (all host bits = 1)." << endl;
-    }
-    else if (firstOctet == 127)
-    {
-        cout << "\nLoopback Address (127.x.x.x)" << endl;
-        cout << "Address Range: 127.0.0.0 - 127.255.255.255" << endl;
-
-        cout << "Definition: A loopback address is a reserved IP address used "
-             << "by a computer to communicate with itself." << endl;
-
-        cout << "Purpose: It is used to test the TCP/IP protocol stack and "
-             << "network applications without using a physical network." << endl;
-
-        cout << "Justification: Any packet sent to 127.x.x.x never leaves the "
-             << "computer. The most commonly used loopback address is "
-             << "127.0.0.1 (localhost)." << endl;
-    }
-    else if (firstOctet >= 128 && firstOctet <= 191)
-    {
-        cout << "\nClass B" << endl;
-        cout << "Address Range: 128.0.0.0 - 191.255.255.255" << endl;
-        cout << "Default Subnet Mask: 255.255.0.0" << endl;
-
-        cout << "\nNumber of Networks: 2^14 = 16,384" << endl;
-        cout << "Reason:" << endl;
-        cout << "-> First 2 bits are fixed to 10 for Class B." << endl;
-        cout << "-> Remaining 14 bits are used for the Network ID." << endl;
-
-        cout << "\nNumber of Hosts per Network: 2^16 - 2 = 65,534" << endl;
-        cout << "Reason:" << endl;
-        cout << "-> Remaining 16 bits are used for the Host ID." << endl;
-        cout << "-> Subtract 1 for the Network Address." << endl;
-        cout << "-> Subtract 1 for the Broadcast Address." << endl;
-    }
-    else if (firstOctet >= 192 && firstOctet <= 223)
-    {
-        cout << "\nClass C" << endl;
-        cout << "Address Range: 192.0.0.0 - 223.255.255.255" << endl;
-        cout << "Default Subnet Mask: 255.255.255.0" << endl;
-
-        cout << "\nNumber of Networks: 2^21 = 2,097,152" << endl;
-        cout << "Reason:" << endl;
-        cout << "-> First 3 bits are fixed to 110 for Class C." << endl;
-        cout << "-> Remaining 21 bits are used for the Network ID." << endl;
-
-        cout << "\nNumber of Hosts per Network: 2^8 - 2 = 254" << endl;
-        cout << "Reason:" << endl;
-        cout << "-> Remaining 8 bits are used for the Host ID." << endl;
-        cout << "-> Subtract 1 for the Network Address." << endl;
-        cout << "-> Subtract 1 for the Broadcast Address." << endl;
-    }
-    else if (firstOctet >= 224 && firstOctet <= 239)
-    {
-        cout << "\nClass D (Multicast)" << endl;
-        cout << "Address Range: 224.0.0.0 - 239.255.255.255" << endl;
-        cout << "Purpose: Used for multicast communication." << endl;
-        cout << "Reason: Class D addresses are reserved for sending data to "
-             << "multiple hosts simultaneously." << endl;
-    }
-    else if (firstOctet >= 240 && firstOctet <= 255)
-    {
-        cout << "\nClass E (Experimental)" << endl;
-        cout << "Address Range: 240.0.0.0 - 255.255.255.255" << endl;
-        cout << "Purpose: Reserved for research and experimental use." << endl;
-        cout << "Reason: These addresses are not assigned to normal hosts or networks."
-             << endl;
-    }
-    else
-    {
-        cout << "Invalid IP Address." << endl;
-    }
-
-    return 0;
-}
-
- 
-
-
-
-
-#include <iostream>
-using namespace std;
-
-int main()
-{
-    int ip[4], subnet;
-
-    cout << "Enter IP Address: ";
+    cout << "Enter IP Address (four octets): ";
     cin >> ip[0] >> ip[1] >> ip[2] >> ip[3];
 
-    cout << "Enter Subnet Prefix (e.g. 24): ";
+    // Validate IP address
+    for (int i = 0; i < 4; i++)
+    {
+        if (ip[i] < 0 || ip[i] > 255)
+        {
+            cout << "Invalid IP address." << endl;
+            return 0;
+        }
+    }
+
+    cout << "Enter Subnet Prefix (24-30): /";
     cin >> subnet;
 
+    // Validate subnet prefix
+    if (subnet < 24 || subnet > 30)
+    {
+        cout << "Invalid prefix." << endl;
+        cout << "This program supports /24 to /30." << endl;
+        return 0;
+    }
+
     int hostBits = 32 - subnet;
-    int hosts = (1 << hostBits) - 2;
-    int networks = 1 << (subnet - 24);
+
+    int hostsPerSubnet = (1 << hostBits) - 2;
+
+    int numberOfSubnets = 1 << (subnet - 24);
+
+    // Calculate last octet of subnet mask
+    int lastMaskOctet = 256 - (1 << (32 - subnet));
 
     cout << "\nIP Address: "
-         << ip[0] << "." << ip[1] << "."
-         << ip[2] << "." << ip[3] << endl;
+         << ip[0] << "."
+         << ip[1] << "."
+         << ip[2] << "."
+         << ip[3] << endl;
 
     cout << "Subnet Prefix: /" << subnet << endl;
 
-    if (subnet >= 24 && subnet <= 30)
-    {
-        cout << "Subnet Mask: 255.255.255.";
+    cout << "Subnet Mask: "
+         << "255.255.255."
+         << lastMaskOctet << endl;
 
-        int mask = 256 - (1 << (32 - subnet));
-        cout << mask << endl;
+    cout << "Number of Subnets: "
+         << numberOfSubnets << endl;
 
-        cout << "Number of Hosts per Subnet: "
-             << hosts << endl;
+    cout << "Number of Hosts per Subnet: "
+         << hostsPerSubnet << endl;
 
-        cout << "Number of Subnets: "
-             << networks << endl;
-    }
-    else
-    {
-        cout << "This program supports prefix values from /24 to /30." << endl;
-    }
+    cout << "\nCalculation:" << endl;
+
+    cout << "-> Total IPv4 bits = 32" << endl;
+    cout << "-> Network bits = " << subnet << endl;
+    cout << "-> Host bits = 32 - " << subnet
+         << " = " << hostBits << endl;
+
+    cout << "-> Total addresses per subnet = 2^"
+         << hostBits << " = "
+         << (1 << hostBits) << endl;
+
+    cout << "-> Usable hosts = 2^"
+         << hostBits << " - 2 = "
+         << hostsPerSubnet << endl;
+
+    cout << "-> Borrowed bits from /24 = "
+         << subnet - 24 << endl;
+
+    cout << "-> Number of subnets = 2^"
+         << (subnet - 24) << " = "
+         << numberOfSubnets << endl;
 
     return 0;
 }
